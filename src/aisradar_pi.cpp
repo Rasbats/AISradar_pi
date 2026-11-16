@@ -65,7 +65,7 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p) {
 //---------------------------------------------------------------------------------------------------------
 
 aisradar_pi::aisradar_pi(void *ppimgr)
-: opencpn_plugin_118(ppimgr),
+: opencpn_plugin_120(ppimgr),
     m_pconfig(0),
     m_parent_window(0),
     m_pAisFrame(0),
@@ -209,49 +209,39 @@ bool aisradar_pi::DeInit(void) {
 }
 
 
-int aisradar_pi::GetAPIVersionMajor() {
-    return OCPN_API_VERSION_MAJOR;
-}
-
+int aisradar_pi::GetAPIVersionMajor() { return atoi(API_VERSION); }
 
 int aisradar_pi::GetAPIVersionMinor() {
-    return OCPN_API_VERSION_MINOR;
+  std::string v(API_VERSION);
+  size_t dotpos = v.find('.');
+  return atoi(v.substr(dotpos + 1).c_str());
 }
 
+int aisradar_pi::GetPlugInVersionMajor() { return PLUGIN_VERSION_MAJOR; }
 
-int aisradar_pi::GetPlugInVersionMajor() {
-    return PLUGIN_VERSION_MAJOR;
-}
+int aisradar_pi::GetPlugInVersionMinor() { return PLUGIN_VERSION_MINOR; }
 
+int GetPlugInVersionPatch() { return PLUGIN_VERSION_PATCH; }
 
-int aisradar_pi::GetPlugInVersionMinor() {
-    return PLUGIN_VERSION_MINOR;
-}
-
-int aisradar_pi::GetPlugInVersionPatch() {
-    return PLUGIN_VERSION_PATCH;
-}
-
-int aisradar_pi::GetPlugInVersionPost() {
-    return PLUGIN_VERSION_TWEAK;
-}
-
+int GetPlugInVersionPost() { return PLUGIN_VERSION_TWEAK; }
+const char* GetPlugInVersionPre() { return PKG_PRERELEASE; }
+const char* GetPlugInVersionBuild() { return PKG_BUILD_INFO; }
 // Shipdriver uses the climatology_panel.png file to make the bitmap.
 wxBitmap *aisradar_pi::GetPlugInBitmap()  { return &m_panelBitmap; }
 // End of shipdriver process
 
 wxString aisradar_pi::GetCommonName() {
-   return _T(PLUGIN_COMMON_NAME);
+   return PLUGIN_API_NAME;
 }
 
 
 wxString aisradar_pi::GetShortDescription() {
-    return _(PLUGIN_SHORT_DESCRIPTION);
+    return PKG_SUMMARY;
 }
 
 
 wxString aisradar_pi::GetLongDescription() {
-    return _(PLUGIN_LONG_DESCRIPTION);
+    return PKG_DESCRIPTION;
 }
 
 

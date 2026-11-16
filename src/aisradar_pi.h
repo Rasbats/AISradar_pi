@@ -34,8 +34,7 @@
 #ifndef  WX_PRECOMP
   #include "wx/wx.h"
 #endif //precompiled headers
-
-#include "version.h"
+#include "config.h"
 
 #include "ocpn_plugin.h"
 #include "aisview.h"
@@ -46,7 +45,7 @@
 
 #define AISVIEW_TOOL_POSITION    -1          // Request default positioning of toolbar tool
 
-class aisradar_pi : public opencpn_plugin_118
+class aisradar_pi : public opencpn_plugin_120
 {
 public:
     aisradar_pi(void *ppimgr);
@@ -60,8 +59,6 @@ public:
     int GetAPIVersionMinor() override;
     int GetPlugInVersionMajor() override;
     int GetPlugInVersionMinor() override;
-    int GetPlugInVersionPatch() override;
-    int GetPlugInVersionPost() override;
     wxBitmap *GetPlugInBitmap() override;
     wxString GetCommonName() override;
     wxString GetShortDescription() override;

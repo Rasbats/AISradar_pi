@@ -13,16 +13,16 @@
 # -------- Options ----------
 
 set(OCPN_TEST_REPO
-    "opencpn/frcurrents-alpha"
+    "opencpn/aisradar-alpha"
     CACHE STRING "Default repository for untagged builds"
 )
 set(OCPN_BETA_REPO
-    "opencpn/frcurrents-beta"
+    "opencpn/aisradar-beta"
     CACHE STRING
     "Default repository for tagged builds matching 'beta'"
 )
 set(OCPN_RELEASE_REPO
-    "opencpn/frcurrents-prod"
+    "opencpn/aisradar-prod"
     CACHE STRING
     "Default repository for tagged builds not matching 'beta'"
 )
@@ -31,64 +31,33 @@ set(OCPN_RELEASE_REPO
 #
 # -------  Plugin setup --------
 #
-set(PKG_NAME frcurrents_pi)
+set(PKG_NAME aisradar_pi)
 set(PKG_VERSION  2.1.0)
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
-set(DISPLAY_NAME frcurrents)    # Dialogs, installer artifacts, ...
-set(PLUGIN_API_NAME frcurrents) # As of GetCommonName() in plugin API
+set(DISPLAY_NAME aisradar)    # Dialogs, installer artifacts, ...
+set(PLUGIN_API_NAME aisradar) # As of GetCommonName() in plugin API
 set(PKG_SUMMARY "French Tidal Currents")
 set(PKG_DESCRIPTION [=[French Tidal Currents from SHOM.
 ]=])
 
 set(PKG_AUTHOR "Mike Rossiter")
 set(PKG_IS_OPEN_SOURCE "yes")
-set(PKG_HOMEPAGE https://github.com/Rasbats/frcurrents_pi)
-set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/frcurrents.html)
+set(PKG_HOMEPAGE https://github.com/Rasbats/aisradar_pi)
+set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/aisradar.html)
 
 set(SRC
-        src/frcurrents_pi.h
-        src/frcurrents_pi.cpp
-        src/frcurrentsOverlayFactory.cpp
-        src/frcurrentsOverlayFactory.h
-        src/frcurrentsUIDialogBase.cpp
-        src/frcurrentsUIDialogBase.h
-        src/frcurrentsUIDialog.cpp
-        src/frcurrentsUIDialog.h
+        src/aisradar_pi.h
+        src/aisradar_pi.cpp
         src/icons.h
         src/icons.cpp
-        src/tcmgr.cpp
-        src/tcmgr.h
-        src/frcurrents_pi.h
-        src/frcurrents_pi.cpp
-        src/frcurrentsOverlayFactory.cpp
-        src/frcurrentsOverlayFactory.h
-        src/frcurrentsUIDialogBase.cpp
-        src/frcurrentsUIDialogBase.h
-        src/frcurrentsUIDialog.cpp
-        src/frcurrentsUIDialog.h
-        src/icons.h
-        src/icons.cpp
-        src/tcmgr.cpp
-        src/tcmgr.h
-        src/IDX_entry.cpp
-        src/IDX_entry.h
-        src/logger.cpp
-        src/logger.h
-        src/Station_Data.cpp
-        src/Station_Data.h
-        src/TC_Error_Code.h
-        src/TCDataFactory.cpp
-        src/TCDataFactory.h
-        src/TCDataSource.cpp
-        src/TCDataSource.h
-        src/TCDS_Ascii_Harmonic.cpp
-        src/TCDS_Ascii_Harmonic.h
-        src/TCDS_Binary_Harmonic.cpp
-        src/TCDS_Binary_Harmonic.h
-        src/georef.cpp
-        src/georef.h
-        src/folder.xpm
+        src/aisview.h
+        src/aisview.cpp
+        src/Canvas.h
+        src/Canvas.cpp
+        src/Target.cpp
+        src/Target.h
+        
 )
 
 set(PKG_API_LIB api-20)  #  A dir in opencpn-libs/ e. g., api-17 or api-16
