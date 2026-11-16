@@ -1,251 +1,132 @@
-##---------------------------------------------------------------------------
-## Author:    Johan van der Sman      hannes@andcrew.nl           
-# License
-# ---------------------------------------------------------------------------
-# - Copyright (C)  by Jon Gough                            *
-# - License:     GPLv3+
-# - This program is free software; you can redistribute it and/or modify  *
-# - it under the terms of the GNU General Public License as published by  *
-# - the Free Software Foundation; either version 2 of the License, or     *
-# - (at your option) any later version.                                   *
-# - *
-# - This program is distributed in the hope that it will be useful,       *
-# - but WITHOUT ANY WARRANTY; without even the implied warranty of        *
-# - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
-# - GNU General Public License for more details.                          *
-# - *
-# - You should have received a copy of the GNU General Public License     *
-# - along with this program; if not, write to the                         *
-# - xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx,                                       *
-# - xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                                       *
-# -----------------------------------------------------------------------------
-# Frontend2 Author: Jon Gough Testplugin(TP) v1.0.358.1 21/01/2026 DD/MM/YYYY
-# format buildCI:yes useODAPI:yes validateJSON:yes
-# ---------------------------------------------------------------------------
-## -- When changing this file do NOT change the order of the sections.    -- ##
-## -- Make changes only between the section blocks identified             -- ##
-## -- The whole configuration process relies on this sequence for success.-- ##
-##
-## -- Modify section below to include all the details for your plugin.    -- ##
+# ~~~
+# Summary:      Main plugin build script
+# Copyright (c) 2020-2021 Mike Rossiter
+# License:      GPLv3+
+# ~~~
 
-set(CMLOC "CMakeLists: ")
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
 
-# define minimum cmake version
-cmake_minimum_required(VERSION 3.5.1)
-if(COMMAND cmake_policy)
-  if (POLICY CMP0043)
-    cmake_policy(SET CMP0043 NEW)
-  endif (POLICY CMP0043)
-  cmake_policy(SET CMP0048 NEW)
-  if (POLICY CMP0076)
-    cmake_policy(SET CMP0076 NEW)
-  endif (POLICY CMP0076)
-  if (POLICY CMP0077)
-    cmake_policy(SET CMP0077 NEW)
-  endif (POLICY CMP0077)
-endif (COMMAND cmake_policy)
+# -------- Cmake setup ---------
+#
+cmake_minimum_required(VERSION 3.12.0)
+include(${CMAKE_SOURCE_DIR}/cmake/CmakeSetup.cmake NO_POLICY_SCOPE)
+message(STATUS "Cmake version: ${CMAKE_VERSION}.")
 
-# set for vscode/vscodium
-set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
-# define plugin name, owner and versions
-set(VERBOSE_NAME "AISradar")
-set(COMMON_NAME "AIS Radar view")
-set(TITLE_NAME "AISradar")
-set(PACKAGE_CONTACT "Johan Sman")
-set(PACKAGE "aisradar")
-set(SHORT_DESCRIPTION "AIS Radar view Plugin")
-set(LONG_DESCRIPTION "Radar PlugIn for OpenCPN Shows AIS targets in a radar style view.")
+# -------- Build setup  --------
+#
+include(PluginOptions)
+if (BUILD_TYPE)
+  message(STATUS "Building: ${BUILD_TYPE}")
+else ()
+  message(STATUS "Configuring")
+endif ()
 
-set(VERSION_MAJOR "1")
-set(VERSION_MINOR "4")
-set(VERSION_PATCH "21")
-set(VERSION_TWEAK "0")
-set(VERSION_DATE  "25/01/2026")#DD/MM/YYYY format
-set(OCPN_MIN_VERSION "ov58")
+# -------- Plugin setup ----------
+#
+include(Plugin.cmake)
 
-set(OCPN_API_VERSION_MAJOR "1")
-set(OCPN_API_VERSION_MINOR "18")
-set(TP_COMMENT "  * Release using CI")
+# -------- Setup completed, build the plugin --------
+#
+project(${PKG_NAME} VERSION ${PKG_VERSION})
+include(PluginCompiler)
 
-set(PARENT "opencpn")
+add_library(${CMAKE_PROJECT_NAME} SHARED EXCLUDE_FROM_ALL ${SRC})
+include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
-#Use to set up a local webserver with git installed.
-#Default is github.com. Now set in pluginconfigure.cmake
-#set(GIT_REPOSITORY_SERVER "github.com")
+add_subdirectory("opencpn-libs/${PKG_API_LIB}")
+target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
+if (NOT "${MIN_API_VERSION}" STREQUAL "")
+  if ("${API_VERSION}" VERSION_GREATER "1.21")
+    set(API_VERSION ${MIN_API_VERSION})
+  endif ()
+endif ()
 
-## Specifies Cloudsmith upload repository suffix for each catalog
-set(PROD "prod")   #Standard Repos
-set(BETA "beta")   #Standard Repos
-set(ALPHA "alpha") #Standard Repos
+set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(VERSION_PATCH ${PROJECT_VERSION_PATCH})
+if (PROJECT_VERSION_TWEAK STREQUAL "")
+  set(PROJECT_VERSION_TWEAK 0)
+endif ()
 
-# Set if  Cloudsmith Base Repository name does not match your Git Repository name.
-#set(CLOUDSMITH_BASE_REPOSITORY "${GIT_REPOSITORY_NAME}")
-#set(CLOUDSMITH_BASE_REPOSITORY "opencpn-plugins")  #Ricks's customization
-set (CLOUDSMITH_BASE_REPOSITORY "aisradar") #without the pi
 
-# Set the following to use OpenCPN cloudsmith repositories instead of own repositories
-set(CLOUDSMITH_USER "opencpn")
-# set(CLOUDSMITH_USER "rick-gleason")
+set(PACKAGE_NAME ${CMAKE_PROJECT_NAME})
 
-set(XML_INFO_URL "https://opencpn.org/OpenCPN/plugins/aisradarview.html")
-set(XML_SUMMARY ${SHORT_DESCRIPTION})
-set(XML_DESCRIPTION ${LONG_DESCRIPTION})
+# Create the minimim ocpn version id string like ov50
+string(REGEX REPLACE "\([0-9]\)\.\([0-9]\).*" "ov\\1\\2"
+       OCPN_MIN_VERSION ${API_OCPN_MIN_VERSION})
 
-## ----- Modify section above to include all the details for your plugin ------- ##
-## ----- Modify section below if there are special requirements for the plugin --##
+if (COMMAND late_init)
+  late_init()
+endif ()
 
-option(PLUGIN_USE_SVG "Use SVG graphics" ON)
+# Optional IDE setup, typically target_include_directories() etc.
+if (EXISTS ide_setup.cmake)
+  include(ide_setup.cmake)
+endif ()
 
-set(CMAKE_CXX_STANDARD 11)
-
-# Prefer libGL.so to libOpenGL.so, see CMP0072
-set(OpenGL_GL_PREFERENCE "LEGACY")   #not operational
-
-option(USE_GL "Enable OpenGL support" OFF)
-message(STATUS "${CMLOC}USE_GL: ${USE_GL}")
-
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-  set(CMAKE_BUILD_TYPE
-      "Release"
-      CACHE STRING "Choose the type of build" FORCE
-  )
-endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-set_property(
-  CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "" "Debug" "Release" "RelWithDebInfo"
-                                  "MinSizeRel"
+# Configure the flatpak manifest
+file(
+  GLOB manifest ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
 )
-message(STATUS "${CMLOC}Build type: ${CMAKE_BUILD_TYPE}")
+include(ConfigureManifest)
+configure_manifest(${manifest} _new_manifest)
 
-# ----- Statements below used to setup standard variables required by the CMAKE  -##
-# ----- process -- Do not remove -##
+# Set up targets. Targets sets up new targets with BUILD_TYPE set to
+# 'flatpak', 'android' or 'tarball'. The initial call without BUILD_TYPE ends
+# here.
+#
+include(Targets)
+create_targets(${_new_manifest})
 
-project(${PACKAGE})
+if ("${BUILD_TYPE}" STREQUAL "")
+  return ()
+endif ()
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
+  # Build package as required (flatpak already dealt with).
+  #
+  if (APPLE)
+    include(MacosWxwidgets)
+  endif ()
+  include(PluginInstall)
+  if (QT_ANDROID)
+    include(AndroidLibs)
+  else ()
+    include(PluginLibs)
+  endif ()
+  include(PluginLocalization)
 
-##========================================================
+  include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
-include("PluginSetup")
+  if (COMMAND add_plugin_libraries)
+    add_plugin_libraries()
+  endif ()
+endif ()
 
-##========================================================
-## ----- Above sets up standard variables required by CMAKE - Do not remove -----##
-## ----- Modify section below if there are special requirements for the plugin --##
-
-set(CMAKE_VERBOSE_MAKEFILE "Activate verbose mode for make files" ON)
-
-option(Plugin_CXX11 "Use c++11" OFF)
-
-## ----- Modify section above if there are special requirements for the plugin --##
-## ----- Do not change next section - needed to configure build process ---------##
-##===========================================================
-
-include("PluginConfigure")
-
-##===========================================================
-## ----- Do not change section above - needed to configure build process --------##
-## ----- Change below to match project requirements for source, headers, etc. ---##
-
-add_definitions(-DUSE_S57)
-
-## ----- Section above - Add your project SET(SRCS and SET(HDRS  etc.-------##
-
-SET(SRCS
-      src/aisradar_pi.h
-      src/aisradar_pi.cpp
-      src/aisview.h
-      src/aisview.cpp
-      src/icons.h
-      src/icons.cpp
-      src/Canvas.h
-      src/Canvas.cpp
-      src/Target.h
-      src/Target.cpp
-    )
-
-
-add_definitions(-DPLUGIN_USE_SVG)
-
-## ----- Section above - Add your project SET(SRCS and SET(HDRS  etc.-------##
-## ----- If using JSON validation in plugin section below is needed --------##
-
-# Do not need Json Schema Validation
-
-## ----- If using JSON validation in plugin section above is needed --------##
-
-##=============================================================
-## Change as required to collect all the set( headers and SRCS
-## This add_library  can be used in conditionals below.
-##=============================================================
-
-set(SRC ${SRCS} ${HDRS})
-
-##=============================================================
-## Modify/configure 'Include' Directories below for the Plugin
-##=============================================================
-
-include_directories(BEFORE ${PROJECT_SOURCE_DIR}/include)
-
-## Change target_sources to match your project needs.
-##==============================================================
-
-target_sources(${PACKAGE_NAME} PUBLIC ${SRC})
-
-##==============================================================
-
-if (NOT OCPN_FLATPAK_CONFIG)
-  # Build environment not available when flatpak is being configured so
-  # following statements will not work
-  message(STATUS "${CMLOC}Adding target link libraries to ${PACKAGE_NAME}")
-
-  if (WIN32)
-    add_subdirectory(opencpn-libs/WindowsHeaders)
-    target_link_libraries(${PACKAGE_NAME} windows::headers)
-  endif (WIN32)
-
-  add_subdirectory(opencpn-libs/api-18)
-  target_link_libraries(${PACKAGE_NAME} ocpn::api)
-
-  add_subdirectory(opencpn-libs/tinyxml)
-  target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
-
-  add_subdirectory(opencpn-libs/plugin_dc)
-  target_link_libraries(${PACKAGE_NAME} ocpn::plugin-dc)
-
-endif (NOT OCPN_FLATPAK_CONFIG)
-
-add_definitions(-DTIXML_USE_STL)
-
-##
-## ----- If using JSON validation section below is needed ---------------##
-##
-
-# Do not need Json Schema Validation
-
-
-##------- Change below to match project requirements --------------------##
-
-# Needed for android builds
-if (QT_ANDROID)
-  include_directories(BEFORE ${qt_android_include})
-endif (QT_ANDROID)
-
-## Needed for all builds Do not change - needed to build app -------------##
-##===============================================================
-
-include("PluginInstall")
-include("PluginLocalization")
-include("PluginPackage")
-
-##================================================================
-## ----- Do not change section above - needed to configure build process --##
-
-message(STATUS "${CMLOC}include directories: ")
-get_property(
-  dirs
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  PROPERTY INCLUDE_DIRECTORIES
+configure_file(
+  ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include/config.h
+  @ONLY
 )
-foreach (dir ${dirs})
-  message(STATUS "${CMLOC}dir='${dir}'")
-endforeach ()
+
+configure_file(
+  # The cloudsmith upload script
+  ${CMAKE_SOURCE_DIR}/ci/upload.sh.in ${CMAKE_BINARY_DIR}/upload.sh
+  @ONLY
+)
+configure_file(
+  # The cloudsmith upload script, windows bat file.
+  ${CMAKE_SOURCE_DIR}/ci/upload.bat.in ${CMAKE_BINARY_DIR}/upload.bat
+  @ONLY
+)
+
+set(checksum "@checksum@")
+configure_file(
+  # The XML metadata file
+  ${CMAKE_SOURCE_DIR}/plugin.xml.in
+  ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml.in
+  @ONLY
+)
